@@ -16,6 +16,9 @@ import sys
 
 def _fast_init_hook_ensure() -> bool:
     """Fast-path health check for `init hook ensure` to avoid heavy CLI imports."""
+    import os
+    if os.environ.get("HEADROOM_FAST_PATH_DISABLE") == "1":
+        return False
     if len(sys.argv) >= 4 and sys.argv[1:4] == ["init", "hook", "ensure"]:
         profile = "init-user"
         for i, arg in enumerate(sys.argv):
