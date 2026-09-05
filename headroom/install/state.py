@@ -90,11 +90,22 @@ def load_manifest(profile: str = "default") -> DeploymentManifest | None:
     # typed error so callers can report cleanly or degrade gracefully.
     try:
         payload = json.loads(path.read_text(encoding="utf-8"))
-        payload["mutations"] = [ManagedMutation(**item) for item in payload.get("mutations", [])]
-        payload["artifacts"] = [ArtifactRecord(**item) for item in payload.get("artifacts", [])]
+        if not isinstance(payload, dict):
+            raise ManifestError(f"deployment profile '{profile}' manifest is not a dict: {path}")
+        payload["mutations"] = [
+            ManagedMutation(**item) if isinstance(item, dict) else item
+            for item in payload.get("mutations", [])
+        ]
+        payload["artifacts"] = [
+            ArtifactRecord(**item) if isinstance(item, dict) else item
+            for item in payload.get("artifacts", [])
+        ]
         if "image" in payload:
             payload["image"] = _migrate_deprecated_image(payload["image"])
-        return DeploymentManifest(**payload)
+        from dataclasses import fields
+        known = {f.name for f in fields(DeploymentManifest)}
+        filtered = {k: v for k, v in payload.items() if k in known}
+        return DeploymentManifest(**filtered)
     except (json.JSONDecodeError, ValueError, TypeError, OSError) as e:
         raise ManifestError(f"deployment profile '{profile}' is corrupt ({path}): {e}") from e
 

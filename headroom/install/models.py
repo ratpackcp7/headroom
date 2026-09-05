@@ -90,16 +90,16 @@ class ArtifactRecord:
 class DeploymentManifest:
     """Persisted deployment state for a named profile."""
 
-    profile: str
-    preset: str
-    runtime_kind: str
-    supervisor_kind: str
-    scope: str
-    provider_mode: str
-    targets: list[str]
-    port: int
-    host: str
-    backend: str
+    profile: str = "default"
+    preset: str = InstallPreset.PERSISTENT_TASK.value
+    runtime_kind: str = RuntimeKind.PYTHON.value
+    supervisor_kind: str = SupervisorKind.NONE.value
+    scope: str = ConfigScope.USER.value
+    provider_mode: str = ProviderSelectionMode.MANUAL.value
+    targets: list[str] = field(default_factory=list)
+    port: int = 8787
+    host: str = "127.0.0.1"
+    backend: str = "anthropic"
     anyllm_provider: str | None = None
     region: str | None = None
     proxy_mode: str = "cache"
